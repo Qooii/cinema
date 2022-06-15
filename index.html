@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+	<title>电影院</title>
+	<link rel="icon" href="./assets/cinema-icon.jpg" type="image/x-icon">
+	<meta charset='utf-8' />
+	<script type="text/javascript" src="./js/three.min.js"></script>
+	<script type="text/javascript" src="./js/OBJLoader.js"></script>
+	<script type="text/javascript" src="./js/MTLLoader.js"></script>
+	<script type="text/javascript" src="./js/FirstPersonControls.js"></script>
+	<script type="text/javascript" src="./js/stats.js"></script>
+	<script type="text/javascript" src="./js/dat.gui.min.js"></script>
+
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+			position: relative;
+		}
+
+		#tips {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			z-index: 1000;
+			color: orange;
+			font-size: 20px;
+			line-height: 30px;
+			text-align: center;
+		}
+
+		#info-area {
+			position: absolute;
+			top: 15px;
+			left: 550px;
+			z-index: 1000;
+			text-align: center;
+			color: #f00;
+			font-size: 40px
+		}
+
+		#video-area {
+			width: 0;
+			height: 0;
+		}
+
+		#btn,
+		#btn1 {
+			position: absolute;
+			width: 100px;
+			height: 60px;
+			font-size: 20px;
+			background-color: #fff;
+		}
+
+		#btn {
+			top: 20px;
+			right: 480px;
+		}
+
+		#btn1 {
+			width: 200px;
+			top: 10px;
+			right: 50px;
+			border-radius: 10px;
+		}
+
+		#buy-seat {
+			position: absolute;
+			top: 150px;
+			width: 150px;
+			height: 300px;
+			font-size: 20px;
+			color: red;
+		}
+
+		#messageControl {
+			position: absolute;
+			top: 20px;
+			width: 100px;
+			height: 60px;
+			font-size: 20px;
+			background-color: #fff;
+			right: 350px;
+		}
+
+		#message {
+			height: 450px;
+			width: 800px;
+			background-color: #ccc;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			margin: auto;
+			display: none;
+			box-shadow: 0px 0px 100px #000;
+			border-radius: 20px;
+		}
+
+		#back {
+			position: absolute;
+			bottom: 20px;
+			width: 100px;
+			height: 60px;
+			font-size: 20px;
+			background-color: #fff;
+			right: 50px;
+			border-radius: 10px;
+		}
+
+		#nowSelect {
+			font-size: 30px;
+			margin-top: 10px;
+			margin-left: 20px;
+		}
+
+		li {
+			list-style: none;
+			float: left;
+			font-size: 30px;
+			margin: 15px;
+			width: 40px;
+			height: 40px;
+			border: 1px #000 solid;
+			background-color: green;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="video-area">
+		<video id="video" autoplay loop muted width="0px" height="0px">
+			<!-- <source src="./assets/阿米娅01.mp4"> -->
+			<source src="./assets/test.mp4">
+		</video>
+	</div>
+
+	<!-- 辅助器显示区域 -->
+	<div id="Stats-output">
+	</div>
+
+	<!-- 提示信息显示区域 -->
+	<div id="tips">
+		使用WASD进行移动，滑动鼠标查看四周。
+		<br>
+		将鼠标移动到座位上可查看相关座位信息。
+		<br>
+		点击“去此座位”按钮即可跳转至相应位置。
+	</div>
+
+	<button id="btn">去此座位</button>
+
+	<!-- 展示已购买的座位区域 -->
+	<div id="buy-seat">
+		当前购买座位：
+		<div id="buy-seat-show">
+		</div>
+	</div>
+
+	<!-- 座位信息显示区域 -->
+	<div id="info-area">
+	</div>
+
+	<!-- 电影院模型显示区域 -->
+	<div id="WebGL-output">
+	</div>
+
+
+	<button id="messageControl">购票</button>
+	<div id="message">
+		<div id="nowSelect">当前选择的座位是：</div>
+		<button id="btn1">购买此座位的票</button>
+		<div>
+			<ul id="seatMap">
+				<li>A1</li>
+				<li>A2</li>
+				<li>A3</li>
+				<li>A4</li>
+				<li>A5</li>
+				<li>A6</li>
+
+				<li>B1</li>
+				<li>B2</li>
+				<li>B3</li>
+				<li>B4</li>
+				<li>B5</li>
+				<li>B6</li>
+
+				<li>C1</li>
+				<li>C2</li>
+				<li>C3</li>
+				<li>C4</li>
+				<li>C5</li>
+				<li>C6</li>
+				<li>C7</li>
+				<li>C8</li>
+
+				<li>D1</li>
+				<li>D2</li>
+				<li>D3</li>
+				<li>D4</li>
+				<li>D5</li>
+				<li>D6</li>
+				<li>D7</li>
+				<li>D8</li>
+
+				<li>E1</li>
+				<li>E2</li>
+				<li>E3</li>
+				<li>E4</li>
+				<li>E5</li>
+				<li>E6</li>
+
+				<li>F1</li>
+				<li>F2</li>
+				<li>F3</li>
+				<li>F4</li>
+				<li>F5</li>
+				<li>F6</li>
+			</ul>
+		</div>
+		<button id="back">退出</button>
+	</div>
+
+	<script type="text/javascript">
+		window.onload = init();
+
+		function init() {
+			//初始化通用变量
+			var WIDTH = window.innerWidth;
+			var HIGHT = window.innerHeight;
+			var mouse = new THREE.Vector2();
+			mouse.x = mouse.y = 0;
+
+			var infoArea = document.getElementById("info-area");
+			var raycaster = new THREE.Raycaster();
+			var INTERSECTED; //上一帧选择的物体
+
+			//建立场景，包括相机、渲染器
+			createScene();
+			//建立灯光
+			createLights();
+			//建立模型
+			createModel();
+			//建立控制器
+			createControl();
+			//建立辅助性对象
+			createItem();
+			//建立事件关联
+			createListener();
+			//渲染相机里场景
+			render();
+
+			// 创建场景
+			var scene, camera, renderer;
+
+			function createScene() {
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera(60, WIDTH / HIGHT, 0.1, 100000);
+
+				camera.position.x = -57; //100
+				camera.position.y = 66; //66
+				camera.position.z = -33; //500
+				// camera.lookAt(scene.position);
+				camera.lookAt(-1, 0, -1);
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor(0xdddddd, 1.0);
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.shadowMap.enabled = true;
+
+				// 屏幕创建
+				var planeGeometry = new THREE.PlaneGeometry(10, 5);
+				var material = new THREE.MeshPhongMaterial();
+				material.side = THREE.DoubleSide;
+				// 屏幕大小
+				var cubeGeometry = new THREE.CubeGeometry(2, 90, 170);
+				var mesh = new THREE.Mesh(cubeGeometry, material);
+				// 屏幕位置
+				mesh.position.x = 393;
+				mesh.position.y = 85;
+				mesh.position.z = 4.5;
+				scene.add(mesh);
+				// 设置视频为贴图材质
+				var video = document.getElementById('video');
+				var texture = new THREE.VideoTexture(video);
+				material.map = texture;
+
+				// 定位方块
+				// var cubeSize = 10;
+				// var cubeGeometry = new THREE.CubeGeometry(cubeSize, cubeSize, cubeSize);
+				// var cubeMaterial = new THREE.MeshLambertMaterial({
+				// 	color: 0xff0000
+				// });
+				// var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+				// cube.castshadow = true;
+				// cube.name = "cube-" + scene.children.length;
+				// cube.position.x = 355
+				// cube.position.y = 54
+				// cube.position.z = 0
+				// scene.add(cube);
+
+				document.getElementById("WebGL-output").appendChild(renderer.domElement);
+			}
+
+			// 创建光源
+			var ambientLight, light;
+
+			function createLights() {
+				ambientLight = new THREE.AmbientLight(0x888888);
+				scene.add(ambientLight);
+
+				var light = new THREE.DirectionalLight(0x999999, 1.0);
+				light.position.set(0, 500, -500);
+				light.target.position.set(180, 25, -67);
+				light.angle = Math.PI / 8;
+				//设置为 true 该平行光会产生动态阴影
+				light.castShadow = true;
+				light.receiveShadow = true;
+				//下面两个值决定使用多少像素生成阴影
+				light.shadow.mapSize.width = 20;
+				light.shadow.mapSize.height = 20;
+				//产生阴影的最近距离
+				light.shadow.camera.near = 1;
+				//产生阴影的最近远距离
+				light.shadow.camera.far = 20;
+				scene.add(light);
+			}
+
+			// 创建和加载模型
+			function createModel() {
+				loadModel('./model/', 'model');
+			}
+
+			function loadModel(path, modelName) {
+				var onProgress = function (xhr) {
+					if (xhr.lengthComputable) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log(Math.round(percentComplete, 2) + '% downloaded');
+					}
+				};
+				var onError = function (xhr) {};
+
+				new THREE.MTLLoader().setPath(path).load(modelName + ".mtl", function (materials) {
+					materials.preload();
+					new THREE.OBJLoader().setMaterials(materials).setPath(path).load(modelName + ".obj", function (object) {
+						object.scale.set(0.05, 0.05, 0.05);
+						scene.add(object);
+
+					}, onProgress, onError);
+				}, onProgress, onError);
+			}
+
+			// 创建控制器
+			var clock, firstPersonControl;
+
+			function createControl() {
+				// 相机控制
+				clock = new THREE.Clock();
+				firstPersonControl = new THREE.FirstPersonControls(camera);
+				// 鼠标移动查看的速度
+				firstPersonControl.lookSpeed = 0.02;
+				// 相机移动速度
+				firstPersonControl.movementSpeed = 80;
+				// 是否能够垂直环视。默认为true。
+				firstPersonControl.lookVertical = true;
+				firstPersonControl.noFly = true;
+				// 垂直环视是否约束在[verticalMin, verticalMax]之间。默认值为false。
+				firstPersonControl.constrainVertical = true;
+				firstPersonControl.verticalMin = 1.0;
+				firstPersonControl.verticalMax = 2.0;
+				// 是否能够环视四周。默认为true。
+				// firstPersonControl.activeLook = false
+			}
+
+			// 创建事件监听（鼠标移动，窗口大小改变）
+			function createListener() {
+				document.addEventListener('mousemove', onDocumentMouseMove, false);
+				window.addEventListener('resize', onWindowResize, false);
+			}
+
+			function onDocumentMouseMove(event) {
+				event.preventDefault();
+				mouse.x = (event.clientX / WIDTH) * 2 - 1;
+				mouse.y = -(event.clientY / HIGHT) * 2 + 1;
+			}
+
+			function onWindowResize() {
+				WIDTH = window.innerWidth;
+				HIGHT = window.innerHeight;
+				renderer.setSize(WIDTH, HIGHT);
+				camera.aspect = WIDTH / HIGHT;
+				camera.updateProjectionMatrix();
+			}
+
+			// 创建辅助对象（帧率显示和更新）
+			var stats, AxesHelper;
+
+			function createItem() {
+				stats = initStats();
+			}
+
+			function render() {
+				stats.update();
+				firstPersonControl.update(clock.getDelta());
+
+				//摄影机高度维持在人眼的高度
+				camera.position.y = 66;
+
+				//相交判断
+				intersect();
+
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
+			}
+
+			function initStats() {
+				var stats = new Stats();
+				stats.setMode(0); // 0: fps, 1: ms
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.right = '0px';
+				stats.domElement.style.top = '0px';
+				document.getElementById("Stats-output").appendChild(stats.domElement);
+				return stats;
+			}
+
+			//选中座位信息显示	
+			function intersect() {
+				raycaster.setFromCamera(mouse, camera);
+				var intersects = raycaster.intersectObjects(scene.children, true);
+				//当前选择了一个物体
+				if (intersects.length > 0) {
+					//如果选择的是一个新物体
+					if (INTERSECTED !== intersects[0].object) {
+						//取intersects变量的第一个元素作为拾取到的物体
+						INTERSECTED = intersects[0].object;
+						var flag = INTERSECTED.name.indexOf('Seat')
+						if (flag !== -1) {
+							infoArea.innerHTML = INTERSECTED.name;
+						}
+					}
+					//如果选择没有变，还是同一个物体 
+					else {
+						var flag = INTERSECTED.name.indexOf('Seat')
+						if (flag !== -1) {
+							infoArea.innerHTML = INTERSECTED.name;
+						}
+					}
+				}
+			}
+
+			// 座位选择与购票
+			var tickets = []
+			var btn = document.getElementById('btn')
+			var btn1 = document.getElementById('btn1')
+			var seatName = infoArea.innerHTML.substr(5)
+			var buySeatShow = document.getElementById('buy-seat-show')
+
+			btn.addEventListener('click', function () {
+				seatName = infoArea.innerHTML.substr(5)
+				if (!seatName) {
+					seatName = 'A3'
+					infoArea.innerHTML = 'Seat_A3'
+				}
+				choose(seatName)
+			})
+
+			function choose(seat) {
+				var seatArr = [
+					'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
+					'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
+					'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8',
+					'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8',
+					'E1', 'E2', 'E3', 'E4', 'E5', 'E6',
+					'F1', 'F2', 'F3', 'F4', 'F5', 'F6'
+				]
+				var index = seatArr.indexOf(seat)
+				var cameraX = [
+					85, 85, 85, 85, 85, 85,
+					0, 0, 0, 0, 0, 0,
+					-65, -65, -65, -65, -65, -65, -65, -65,
+					-140, -140, -140, -140, -140, -140, -140, -140,
+					-200, -200, -200, -200, -200, -200,
+					-265, -265, -265, -265, -265, -265
+				]
+				var cameraY = [
+					30, 30, 30, 30, 30, 30,
+					33, 33, 33, 33, 33, 33,
+					45, 45, 45, 45, 45, 45,
+					48, 48, 48, 48, 48, 48,
+					51, 51, 51, 51, 51, 51,
+					54, 54, 54, 54, 54, 54
+				]
+				var cameraZ = [
+					-155, -100, -20, 30, 115, 165,
+					-155, -100, -20, 30, 115, 165,
+					-180, -140, -57, -17, 22, 62, 142, 182,
+					-180, -140, -57, -17, 22, 62, 142, 182,
+					-180, -140, -57, -17, 22, 62,
+					-180, -140, -57, -17, 22, 62
+				]
+				camera.position.x = cameraX[index];
+				camera.position.y = cameraY[index];
+				camera.position.z = cameraZ[index];
+			}
+
+			// 限定移动范围
+			document.body.addEventListener("keyup", function () {
+				if (camera.position.x < -380) {
+					camera.position.x = -380
+				}
+				if (camera.position.x > 355) {
+					camera.position.x = 355
+				}
+				if (camera.position.z < -205) {
+					camera.position.z = -205
+				}
+				if (camera.position.z > 205) {
+					camera.position.z = 205
+				}
+			})
+
+			document.body.addEventListener("mouseup", function () {
+				if (camera.position.x < -380) {
+					camera.position.x = -380
+				}
+				if (camera.position.x > 355) {
+					camera.position.x = 355
+				}
+				if (camera.position.z < -205) {
+					camera.position.z = -205
+				}
+				if (camera.position.z > 205) {
+					camera.position.z = 205
+				}
+			})
+
+			// 购票弹窗
+			var vis = 1
+			var back = document.getElementById('back')
+			var mes = document.getElementById('message')
+			var mesCon = document.getElementById('messageControl')
+			var nowSelect = document.getElementById('nowSelect')
+			var lis = document.getElementsByTagName('li')
+			var seatNameBuy = ''
+			var seatArr = [
+				'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
+				'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
+				'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8',
+				'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8',
+				'E1', 'E2', 'E3', 'E4', 'E5', 'E6',
+				'F1', 'F2', 'F3', 'F4', 'F5', 'F6'
+			]
+
+			// 点击购票按钮
+			mesCon.addEventListener('click', function () {
+				seatNameBuy = infoArea.innerHTML.substr(5)
+				infoArea.innerHTML = ''
+				if (vis) {
+					nowSelect.innerHTML = '当前选择的座位是：' + seatNameBuy
+					var index = seatArr.indexOf(seatNameBuy)
+					for (let i = 0; i < lis.length; i++) {
+						lis[i].style.backgroundColor = 'green'
+					}
+					lis[index].style.backgroundColor = 'blue'
+					for (let i = 0; i < tickets.length; i++) {
+						for (let j = 0; j < lis.length; j++) {
+							if (tickets[i] == lis[j].innerHTML) {
+								lis[j].style.backgroundColor = 'red'
+							}
+						}
+					}
+					mes.style.display = 'block'
+					vis = !vis
+				}
+			})
+
+			// 点击退出按钮
+			back.addEventListener('click', function () {
+				infoArea.innerHTML = 'Seat_A3'
+				if (!vis) {
+					mes.style.display = 'none'
+					vis = !vis
+				}
+			})
+
+			// 点击座位名字选择座位
+			for (let i = 0; i < lis.length; i++) {
+				lis[i].addEventListener('click', function () {
+					for (let i = 0; i < lis.length; i++) {
+						lis[i].style.backgroundColor = 'green'
+					}
+					nowSelect.innerHTML = '当前选择的座位是：' + lis[i].innerHTML
+					seatNameBuy = lis[i].innerHTML
+					var index = seatArr.indexOf(lis[i].innerHTML)
+					lis[index].style.backgroundColor = 'blue'
+					for (let i = 0; i < tickets.length; i++) {
+						for (let j = 0; j < lis.length; j++) {
+							if (tickets[i] == lis[j].innerHTML) {
+								lis[j].style.backgroundColor = 'red'
+							}
+						}
+					}
+				})
+			}
+
+			// 点击购买此座位按钮
+			btn1.addEventListener('click', function () {
+				var index = tickets.indexOf(seatNameBuy)
+				if (index === -1) {
+					tickets.push(seatNameBuy)
+					alert('座位 ' + seatNameBuy + ' 购买成功！')
+					buySeatShow.innerHTML = tickets.join(' ')
+					for (let i = 0; i < tickets.length; i++) {
+						for (let j = 0; j < lis.length; j++) {
+							if (tickets[i] == lis[j].innerHTML) {
+								lis[j].style.backgroundColor = 'red'
+							}
+						}
+					}
+				} else {
+					var result = prompt('座位' + seatNameBuy + '已被购买！是否取消购买？(Y/y or N/n)')
+					if (result === 'Y' || result === 'y') {
+						var indexSeat = seatArr.indexOf(seatNameBuy)
+						lis[indexSeat].style.backgroundColor = 'green'
+						tickets.splice(index, 1)
+						alert('已经取消购买此座位！')
+						buySeatShow.innerHTML = tickets.join(' ')
+					}
+				}
+			})
+		}
+	</script>
+</body>
+
+</html>
